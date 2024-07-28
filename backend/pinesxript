@@ -1,0 +1,37 @@
+//@version=5
+strategy("ATR Channel Breakout", overlay=true, pyramiding=10, initial_capital=100000, commission_type=strategy.commission.cash_per_order, commission_value=0.001, slippage=2)
+
+// Inputs
+smaLength = input.int(350, title="SMA Length")
+atrLength = input.int(20, title="ATR Length")
+
+ubOffset = input.float(7, title="Upperband Offset", step=0.50)
+lbOffset = input.float(3, title="Lowerband Offset", step=0.50)
+
+// Calculate indicators
+smaValue = ta.sma(close, smaLength)
+atrValue = ta.atr(atrLength)  // Corrected ATR calculation with single parameter
+
+upperBand = smaValue + (ubOffset * atrValue)
+lowerBand = smaValue - (lbOffset * atrValue)
+
+// Plot indicators
+plot(smaValue, title="SMA", color=color.orange)
+plot(upperBand, title="Upper Band", color=color.green, linewidth=2)
+plot(lowerBand, title="Lower Band", color=color.red, linewidth=2)
+
+// Entry and exit conditions
+longCondition = ta.crossover(close, upperBand)
+shortCondition = ta.crossunder(close, lowerBand)
+
+if (longCondition)
+    strategy.entry("Long", strategy.long)
+
+if (shortCondition)
+    strategy.entry("Short", strategy.short)
+
+exitCondition = ta.crossunder(close, smaValue)
+if (exitCondition)
+    strategy.close("Long")
+    strategy.close("Short")
+
