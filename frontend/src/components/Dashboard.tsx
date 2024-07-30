@@ -2,58 +2,43 @@ import React, { useState } from 'react';
 import Header from './Header';
 import SettingsForm, { Settings } from './SettingsForm';
 import TradingViewChart from './TradingViewChart';
-import UploadForm from './UploadForm';
 import ResultsTable from './ResultsTable';
 import axios from 'axios';
 
 const Dashboard: React.FC = () => {
   const [settings, setSettings] = useState<Settings>({
-    initialEquity: '',
-    riskPerTrade: '',
-    riskCapitalPerTrade: '',
-    lookBack: '',
-    pair: 'BTCUSDT',
-    interval: '1',
-    monteCarlo: false,
-    commission: '',
-    slippage: '',
-    pyramiding: '',
-    apiKey: '',
-    apiSecret: ''
+    initialEquity: '10000',
+    riskPerTrade: '2',
+    riskCapitalPerTrade: '0',
+    lookBack: '1000',
+    pair: 'BTCUSDC',
+    interval: '1m',
+    commission: '0.001',
+    slippage: '1',
+    pyramiding: '3'
   });
   const [results, setResults] = useState<Array<{ result: string; value: string }>>([]);
-  const [script, setScript] = useState<string>('');
+  const [loading, setLoading] = useState<boolean>(false);
 
   const handleSettingsChange = (newSettings: Settings) => {
     setSettings(newSettings);
   };
 
   const handleSettingsSubmit = async (settings: Settings) => {
+    setLoading(true);
     try {
-      console.log('Submitting settings:', settings, script);
-      
-      const response = await axios.post('http://localhost:3000/backtest', { settings, script });
-      setResults(response.data.results);
+      console.log('Submitting settings:', settings);
+      const response = await axios.post('http://localhost:3000/backtest', settings);
+      const resultsArray = response.data.results.map((item: { result: string; value: string }) => ({
+        result: item.result,
+        value: item.value
+      }));
+      setResults(resultsArray);
     } catch (error) {
       console.error('Error submitting settings', error);
+    } finally {
+      setLoading(false);
     }
-  };
-
-  const handleFileUpload = async (file: File) => {
-    const formData = new FormData();
-    formData.append('file', file);
-
-    try {
-      const response = await axios.post('http://localhost:3000/backtest', formData);
-      setResults(response.data.results);
-      setScript(response.data.fileContent); // Update script from file upload
-    } catch (error) {
-      console.error('Error uploading file', error);
-    }
-  };
-
-  const handleScriptChange = (script: string) => {
-    setScript(script);
   };
 
   return (
@@ -62,9 +47,12 @@ const Dashboard: React.FC = () => {
       <div className="flex w-full space-x-4">
         <SettingsForm onChange={handleSettingsChange} onSubmit={handleSettingsSubmit} />
         <TradingViewChart pair={settings.pair} />
-        <UploadForm onFileUpload={handleFileUpload} onScriptChange={handleScriptChange} />
       </div>
-      <ResultsTable results={results} />
+      {loading ? (
+        <div className="w-full p-4 border rounded-md">Loading...</div>
+      ) : (
+        <ResultsTable results={results} />
+      )}
     </div>
   );
 };

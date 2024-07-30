@@ -5,6 +5,10 @@ interface ResultsTableProps {
 }
 
 const ResultsTable: React.FC<ResultsTableProps> = ({ results }) => {
+  if (!Array.isArray(results) || results.length === 0) {
+    return <div className="w-full p-4 border rounded-md">No results to display</div>;
+  }
+
   return (
     <div className="w-full p-4 border rounded-md">
       <div className="relative w-full overflow-auto">
@@ -22,8 +26,8 @@ const ResultsTable: React.FC<ResultsTableProps> = ({ results }) => {
           <tbody className="[&amp;_tr:last-child]:border-0">
             {results.map((result, index) => (
               <tr key={index} className="border-b transition-colors hover:bg-muted/50 data-[state=selected]:bg-muted">
-                <td className="p-4 align-middle [&amp;:has([role=checkbox])]:pr-0 font-medium">{result.result}</td>
-                <td className="p-4 align-middle [&amp;:has([role=checkbox])]:pr-0">{result.value}</td>
+                <td className="p-4 align-middle font-medium">{result.result}</td>
+                <td className="p-4 align-middle">{result.value}</td>
               </tr>
             ))}
           </tbody>

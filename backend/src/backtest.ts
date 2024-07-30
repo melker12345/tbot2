@@ -1,167 +1,185 @@
-import Binance from 'binance-api-node';
-import { SMA, ATR } from 'technicalindicators';
+import { Spot } from '@binance/connector-typescript';
+import * as dotenv from 'dotenv';
 
-// Define the interface for strategy settings
-interface StrategySettings {
-    initialEquity: number; // Initial equity for the backtest
-    riskPerTrade: number; // Risk per trade as a percentage of equity
-    riskCapitalPerTrade: number; // Risk capital per trade
-    lookBack: string; // Number of historical data points to fetch
-    pair: string; // Trading pair symbol
-    interval: number; // Interval for the historical data
-    monteCarlo: boolean; // Flag for Monte Carlo simulation
-    commission: number; // Commission per trade
-    slippage: number; // Slippage per trade
-    pyramiding: string; // Pyramiding strategy
-    apiKey: string; // Binance API key
-    apiSecret: string; // Binance API secret
-    Pyramiding: number; // Pyramiding factor
-    [key: string]: any; // Allow additional settings
+dotenv.config();
+
+const API_KEY = process.env.BINANCE_API_KEY!;
+const API_SECRET = process.env.BINANCE_API_SECRET!;
+const BASE_URL = 'https://api.binance.com';
+
+const client = new Spot(API_KEY, API_SECRET, { baseURL: BASE_URL });
+
+// Strategy Parameters
+const fastLength = 9;
+const slowLength = 50;
+const rsiLength = 14;
+const rsiOverbought = 70;
+const rsiOversold = 30;
+const atrLength = 14;
+const atrMultiplier = 1.5;
+const riskPercent = 1;
+
+// Helper Functions to calculate indicators
+function sma(data: number[], length: number): number[] {
+  const result: number[] = [];
+  for (let i = length - 1; i < data.length; i++) {
+    const sum = data.slice(i - length + 1, i + 1).reduce((a, b) => a + b, 0);
+    result.push(sum / length);
+  }
+  return result;
 }
 
-// Define the interface for trade results
-interface TradeResult {
-    profit: number; // Profit of the trade
-    entryPrice: number; // Entry price of the trade
-    exitPrice: number; // Exit price of the trade
-    entryTime: Date; // Entry time of the trade
-    exitTime: Date; // Exit time of the trade
-    duration: number; // Duration of the trade
-    maxDrawdown: number; // Maximum drawdown of the trade
-    tradeType: string; // Type of the trade
-    tradeSize: number; // Size of the trade
-}
-
-// Define the interface for performance metrics
-interface PerformanceMetrics {
-    netProfit: number; // Net profit of the backtest
-    grossProfit: number; // Gross profit of the backtest
-    grossLoss: number; // Gross loss of the backtest
-    maxRunUp: number; // Maximum run-up of the backtest
-    maxDrawdown: number; // Maximum drawdown of the backtest
-    buyHoldReturn: number; // Buy and hold return of the backtest
-    sharpeRatio: number; // Sharpe ratio of the backtest
-    sortinoRatio: number; // Sortino ratio of the backtest
-    profitFactor: number; // Profit factor of the backtest
-    maxContractsHeld: number; // Maximum number of contracts held
-    openPL: number; // Open profit/loss of the backtest
-    commissionPaid: number; // Commission paid during the backtest
-    totalClosedTrades: number; // Total number of closed trades
-    totalOpenTrades: number; // Total number of open trades
-    numberWinningTrades: number; // Number of winning trades
-    numberLosingTrades: number; // Number of losing trades
-    percentProfitable: number; // Percentage of profitable trades
-    avgTrade: number; // Average trade profit/loss
-    avgWinningTrade: number; // Average profit of winning trades
-    avgLosingTrade: number; // Average loss of losing trades
-    ratioAvgWinAvgLoss: number; // Ratio of average win to average loss
-    largestWinningTrade: number; // Largest profit of a winning trade
-    largestLosingTrade: number; // Largest loss of a losing trade
-    avgBarsInTrades: number; // Average duration of trades
-    avgBarsInWinningTrades: number; // Average duration of winning trades
-    avgBarsInLosingTrades: number; // Average duration of losing trades
-}
-
-// Calculate performance metrics based on trade results
-const calculatePerformanceMetrics = (results: TradeResult[]): PerformanceMetrics => {
-    const totalTrades = results.length;
-    const winningTrades = results.filter(result => result.profit > 0).length;
-    const losingTrades = totalTrades - winningTrades;
-    const winRate = (winningTrades / totalTrades) * 100;
-    const netProfit = results.reduce((acc, result) => acc + result.profit, 0);
-    const grossProfit = results.filter(result => result.profit > 0).reduce((acc, result) => acc + result.profit, 0);
-    const grossLoss = results.filter(result => result.profit < 0).reduce((acc, result) => acc + result.profit, 0);
-    const averageProfit = winningTrades > 0 ? grossProfit / winningTrades : 0;
-    const averageLoss = losingTrades > 0 ? grossLoss / losingTrades : 0;
-    const profitFactor = grossLoss !== 0 ? -grossProfit / grossLoss : 0;
-    const maxDrawdown = results.reduce((max, result) => result.maxDrawdown > max ? result.maxDrawdown : max, 0);
-    const averageTradeDuration = totalTrades > 0 ? results.reduce((acc, result) => acc + result.duration, 0) / totalTrades : 0;
-    const largestWinningTrade = results.reduce((max, result) => result.profit > max ? result.profit : max, 0);
-    const largestLosingTrade = results.reduce((min, result) => result.profit < min ? result.profit : min, 0);
-    const avgBarsInTrades = totalTrades > 0 ? results.reduce((acc, result) => acc + result.duration, 0) / totalTrades : 0;
-    const avgBarsInWinningTrades = winningTrades > 0 ? results.filter(result => result.profit > 0).reduce((acc, result) => acc + result.duration, 0) / winningTrades : 0;
-    const avgBarsInLosingTrades = losingTrades > 0 ? results.filter(result => result.profit < 0).reduce((acc, result) => acc + result.duration, 0) / losingTrades : 0;
-
-    // Placeholder for sharpeRatio and sortinoRatio calculation, needs return data and risk-free rate
-    const sharpeRatio = 0;
-    const sortinoRatio = 0;
-
-    return {
-        netProfit,
-        grossProfit,
-        grossLoss,
-        maxRunUp: 0, // Placeholder, need actual logic
-        maxDrawdown,
-        buyHoldReturn: 0, // Placeholder, need actual logic
-        sharpeRatio,
-        sortinoRatio,
-        profitFactor,
-        maxContractsHeld: 0, // Placeholder, need actual logic
-        openPL: 0, // Placeholder, need actual logic
-        commissionPaid: 0, // Placeholder, need actual logic
-        totalClosedTrades: totalTrades,
-        totalOpenTrades: 0, // Placeholder, need actual logic
-        numberWinningTrades: winningTrades,
-        numberLosingTrades: losingTrades,
-        percentProfitable: winRate,
-        avgTrade: totalTrades > 0 ? netProfit / totalTrades : 0,
-        avgWinningTrade: averageProfit,
-        avgLosingTrade: averageLoss,
-        ratioAvgWinAvgLoss: averageLoss !== 0 ? averageProfit / averageLoss : 0,
-        largestWinningTrade,
-        largestLosingTrade,
-        avgBarsInTrades,
-        avgBarsInWinningTrades,
-        avgBarsInLosingTrades
-    };
-};
-
-// Fetch historical data from Binance API
-const fetchHistoricalData = async (symbol: string, interval: any, lookback: string, apiKey: string, apiSecret: string): Promise<{ close: number[], high: number[], low: number[], time: number[] }> => {
-    const client = Binance({
-        apiKey: apiKey,
-        apiSecret: apiSecret,
-    });
-
-    try {
-        const candles = await client.candles({
-            symbol: symbol.toUpperCase(),
-            interval: interval,
-            limit: parseInt(lookback)
-        });
-
-        const data = candles.map((candle: any) => ({
-            close: parseFloat(candle.close),
-            high: parseFloat(candle.high),
-            low: parseFloat(candle.low),
-            time: candle.openTime
-        }));
-
-        return {
-            close: data.map(d => d.close),
-            high: data.map(d => d.high),
-            low: data.map(d => d.low),
-            time: data.map(d => d.time)
-        };
-    } catch (error) {
-        console.error('Error fetching historical data:', error);
-        throw error;
+function rsi(data: number[], length: number): number[] {
+  const result: number[] = [];
+  for (let i = length; i < data.length; i++) {
+    const gains: number[] = [];
+    const losses: number[] = [];
+    for (let j = i - length + 1; j <= i; j++) {
+      const change = data[j] - data[j - 1];
+      if (change > 0) gains.push(change);
+      else losses.push(Math.abs(change));
     }
-};
+    const avgGain = gains.reduce((a, b) => a + b, 0) / length;
+    const avgLoss = losses.reduce((a, b) => a + b, 0) / length;
+    const rs = avgGain / avgLoss;
+    result.push(100 - (100 / (1 + rs)));
+  }
+  return result;
+}
 
-// Execute the strategy code with the given data and settings
-const executeStrategy = (strategyCode: string, data: { close: number[], high: number[], low: number[], time: number[] }, settings: StrategySettings): TradeResult[] => {
-    const strategyFunction = new Function('data', 'settings', strategyCode);
-    return strategyFunction(data, settings);
-};
+function atr(high: number[], low: number[], close: number[], length: number): number[] {
+  const result: number[] = [];
+  for (let i = length; i < close.length; i++) {
+    const tr: number[] = [];
+    for (let j = i - length + 1; j <= i; j++) {
+      tr.push(Math.max(high[j] - low[j], Math.abs(high[j] - close[j - 1]), Math.abs(low[j] - close[j - 1])));
+    }
+    result.push(tr.reduce((a, b) => a + b, 0) / length);
+  }
+  return result;
+}
 
-// Perform backtesting with the given strategy code and settings
-const backtest = async (strategyCode: string, settings: StrategySettings): Promise<PerformanceMetrics> => {
-    const { pair, interval, lookBack, apiKey, apiSecret } = settings;
-    const data = await fetchHistoricalData(pair, interval, lookBack, apiKey, apiSecret);
-    const trades = executeStrategy(strategyCode, data, settings);
-    return calculatePerformanceMetrics(trades);
-};
+// Function to fetch historical data
+async function fetchHistoricalData(symbol: string, interval: any, startTime: number, endTime: number) {
+  try {
+    const candles = await client.uiklines(symbol, interval, { startTime, endTime });
+    return candles.map((candle: any) => ({
+      openTime: candle[0],
+      open: parseFloat(candle[1]),
+      high: parseFloat(candle[2]),
+      low: parseFloat(candle[3]),
+      close: parseFloat(candle[4]),
+      volume: parseFloat(candle[5]),
+      closeTime: candle[6],
+      quoteAssetVolume: parseFloat(candle[7]),
+      numberOfTrades: candle[8],
+      takerBuyBaseAssetVolume: parseFloat(candle[9]),
+      takerBuyQuoteAssetVolume: parseFloat(candle[10])
+    }));
+  } catch (error) {
+    console.error('Error fetching historical data:', error);
+    return [];
+  }
+}
 
-// Export the necessary functions and interfaces
-export { backtest, StrategySettings, PerformanceMetrics };
+// Function to execute the backtest
+async function backtest(symbol: string, interval: string, startTime: number, endTime: number) {
+  const data = await fetchHistoricalData(symbol, interval, startTime, endTime);
+  if (!data.length) return;
+
+  const closes = data.map(d => d.close);
+  const highs = data.map(d => d.high);
+  const lows = data.map(d => d.low);
+
+  const fastMA = sma(closes, fastLength);
+  const slowMA = sma(closes, slowLength);
+  const rsiValues = rsi(closes, rsiLength);
+  const atrValues = atr(highs, lows, closes, atrLength);
+
+  let initialCapital = 1000;
+  let capital = initialCapital;
+  let position = 0; // 1 for long, -1 for short, 0 for no position
+  let entryPrice = 0;
+  let performance = [];
+  let trades = 0;
+  let wins = 0;
+  let losses = 0;
+  let totalPercentGain = 0;
+  let totalPercentLoss = 0;
+
+  for (let i = Math.max(fastLength, slowLength, rsiLength, atrLength); i < closes.length; i++) {
+    const currentPrice = closes[i];
+    const fast = fastMA[i - fastLength];
+    const slow = slowMA[i - slowLength];
+    const rsi = rsiValues[i - rsiLength];
+    const atr = atrValues[i - atrLength];
+
+    const longCondition = fast > slow && rsi < rsiOverbought;
+    const shortCondition = fast < slow && rsi > rsiOversold;
+
+    if (position === 0) {
+      if (longCondition) {
+        position = 1;
+        entryPrice = currentPrice;
+        console.log(`Entering long position at ${currentPrice}`);
+      } else if (shortCondition) {
+        position = -1;
+        entryPrice = currentPrice;
+        console.log(`Entering short position at ${currentPrice}`);
+      }
+    }
+
+    const stopLoss = position === 1 ? entryPrice - atr * atrMultiplier : entryPrice + atr * atrMultiplier;
+    const takeProfit = position === 1 ? entryPrice + atr * atrMultiplier * 2 : entryPrice - atr * atrMultiplier * 2;
+
+    if (position === 1 && (currentPrice <= stopLoss || currentPrice >= takeProfit)) {
+      const percentChange = ((currentPrice - entryPrice) / entryPrice) * 100;
+      capital += (currentPrice - entryPrice) * (capital / entryPrice);
+      performance.push({ date: data[i].openTime, capital });
+      console.log(`Exiting long position at ${currentPrice}, new capital: ${capital}`);
+      trades++;
+      if (percentChange > 0) {
+        wins++;
+        totalPercentGain += percentChange;
+      } else {
+        losses++;
+        totalPercentLoss += percentChange;
+      }
+      position = 0;
+    } else if (position === -1 && (currentPrice >= stopLoss || currentPrice <= takeProfit)) {
+      const percentChange = ((entryPrice - currentPrice) / entryPrice) * 100;
+      capital += (entryPrice - currentPrice) * (capital / entryPrice);
+      performance.push({ date: data[i].openTime, capital });
+      console.log(`Exiting short position at ${currentPrice}, new capital: ${capital}`);
+      trades++;
+      if (percentChange > 0) {
+        wins++;
+        totalPercentGain += percentChange;
+      } else {
+        losses++;
+        totalPercentLoss += percentChange;
+      }
+      position = 0;
+    }
+  }
+
+  const netProfit = capital - initialCapital;
+  const netProfitPercent = (netProfit / initialCapital) * 100;
+  const profitRatio = wins / losses;
+  const averageTrade = netProfitPercent / trades;
+
+  console.log('Backtest completed. Performance:');
+  console.log(`Final Balance: $${capital.toFixed(2)}`);
+  console.log(`Net Profit: $${netProfit.toFixed(2)} (${netProfitPercent.toFixed(2)}%)`);
+  console.log(`Profit Ratio: ${profitRatio.toFixed(2)}`);
+  console.log(`Total Closed Trades: ${trades}`);
+  console.log(`Average Trade: ${averageTrade.toFixed(2)}%`);
+}
+
+// Define your backtest parameters
+const symbol = 'BTCUSDT';
+const interval = '1d';
+const startTime = new Date('2020-01-01').getTime();
+const endTime = new Date('2021-01-01').getTime();
+
+backtest(symbol, interval, startTime, endTime);
