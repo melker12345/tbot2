@@ -6,7 +6,7 @@ interface ResultsTableProps {
 
 const ResultsTable: React.FC<ResultsTableProps> = ({ results }) => {
   if (!Array.isArray(results) || results.length === 0) {
-    return <div className="w-full p-4 border rounded-md">No results to display</div>;
+    return <div className="w-full flex p-4 border rounded-md items-center justify-center">No results to display</div>;
   }
 
   return (

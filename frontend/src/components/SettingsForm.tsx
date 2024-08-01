@@ -1,14 +1,25 @@
 import React, { useState } from 'react';
+import TradingViewChart from './TradingViewChart';
 
 export interface Settings {
   initialEquity: string;
   riskPerTrade: string;
+  riskCapitalPerTrade: string;
   lookBack: string;
   pair: string;
   interval: string;
   commission: string;
   slippage: string;
   pyramiding: string;
+  stopLoss: string;
+  takeProfit: string;
+  shortMALength: string;
+  longMALength: string;
+  rsiLength: string;
+  rsiOverbought: string;
+  rsiOversold: string;
+  atrLength: string;
+  atrMultiplier: string;
 }
 
 interface SettingsFormProps {
@@ -18,24 +29,33 @@ interface SettingsFormProps {
 
 const SettingsForm: React.FC<SettingsFormProps> = ({ onChange, onSubmit }) => {
   const [settings, setSettings] = useState<Settings>({
-    initialEquity: '',
-    riskPerTrade: '',
-    lookBack: '',
-    pair: 'BTCUSDT',
-    interval: '1d',
-    commission: '',
-    slippage: '',
-    pyramiding: ''
+    initialEquity: '10000',
+    riskPerTrade: '2',
+    riskCapitalPerTrade: '0',
+    lookBack: '1000',
+    pair: 'BTCUSDC',
+    interval: '1m',
+    commission: '0.001',
+    slippage: '1',
+    pyramiding: '3',
+    stopLoss: '2',
+    takeProfit: '4',
+    shortMALength: '9',
+    longMALength: '50',
+    rsiLength: '14',
+    rsiOverbought: '70',
+    rsiOversold: '30',
+    atrLength: '14',
+    atrMultiplier: '1.5'
   });
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-    const { id, value, type, checked } = e.target as any;
-    const newSettings = {
-      ...settings,
-      [id]: type === 'checkbox' ? checked : value,
-    };
-    setSettings(newSettings);
-    onChange(newSettings);
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setSettings(prevSettings => ({
+      ...prevSettings,
+      [name]: value
+    }));
+    onChange({ ...settings, [name]: value });
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -43,53 +63,67 @@ const SettingsForm: React.FC<SettingsFormProps> = ({ onChange, onSubmit }) => {
     onSubmit(settings);
   };
 
+  const generalSettings = [
+    'initialEquity', 'riskPerTrade', 'riskCapitalPerTrade', 'lookBack', 'pair', 
+    'interval', 'commission', 'slippage', 'pyramiding', 
+  ];
+
+  const strategySettings = [
+    'stopLoss', 'takeProfit', 'shortMALength', 'longMALength', 'rsiLength', 
+    'rsiOverbought', 'rsiOversold', 'atrLength', 'atrMultiplier'
+  ];
+
   return (
-    <form onSubmit={handleSubmit} className="w-1/3 p-4 space-y-4 border rounded-md">
-      {[
-        { id: 'initialEquity', label: 'Initial Equity', placeholder: 'Initial Equity' },
-        { id: 'riskPerTrade', label: 'Risk per Trade (%)', placeholder: 'Risk per Trade' },
-        { id: 'lookBack', label: 'Look Back (candles)', placeholder: 'Look Back' },
-        { id: 'pair', label: 'Pair', placeholder: 'Pair' },
-        { id: 'commission', label: 'Commission (%)', placeholder: 'Commission' },
-        { id: 'slippage', label: 'Slippage (%)', placeholder: 'Slippage' },
-        { id: 'pyramiding', label: 'Pyramiding', placeholder: 'Pyramiding' }
-      ].map(({ id, label, placeholder }) => (
-        <div key={id}>
-          <label className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70" htmlFor={id}>
-            {label}
-          </label>
-          <input
-            className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-            id={id}
-            value={settings[id as keyof Settings] as any}
-            onChange={handleChange}
-            placeholder={placeholder}
-            type="text"
-          />
-        </div>
-      ))}
-      <div>
-        <label className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70" htmlFor="interval">
-          Interval
-        </label>
-        <select
-          id="interval"
-          value={settings.interval}
-          onChange={handleChange}
-          className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-        >
-          <option value="1m">1min</option>
-          <option value="5m">5min</option>
-          <option value="15m">15min</option>
-          <option value="1h">1h</option>
-          <option value="4h">4h</option>
-          <option value="1d">1d</option>
-        </select>
+    <>
+    <div className="flex h-fit w-full border-b-2">
+      <form className="flex flex-col w-fit  space-y-4 p-4 border-r" onSubmit={handleSubmit}>
+        <h2 className="text-lg font-semibold">General Settings</h2>
+        {generalSettings.map(key => (
+          <div key={key} className="flex flex-col">
+            <label htmlFor={key} className="text-sm font-medium">
+              {key.replace(/([A-Z])/g, ' $1').trim()}
+            </label>
+            <input
+              type="text"
+              id={key}
+              name={key}
+              value={(settings as any)[key]}
+              onChange={handleChange}
+              className="p-2 border rounded"
+            />
+          </div>
+        ))}
+      </form>
+      
+      <div className="flex flex-col w-full items-center p-4">
+        < TradingViewChart pair={settings.pair} />
       </div>
-      <button type="submit" className="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 border border-input bg-background hover:bg-accent hover:text-accent-foreground h-10 px-4 py-2">
-        Submit
-      </button>
-    </form>
+      
+      <form className="flex flex-col w-fit space-y-4 p-4 border-l" onSubmit={handleSubmit}>
+        <h2 className="text-lg font-semibold">Strategy Settings</h2>
+        {strategySettings.map(key => (
+          <div key={key} className="flex flex-col">
+            <label htmlFor={key} className="text-sm font-medium">
+              {key.replace(/([A-Z])/g, ' $1').trim()}
+            </label>
+            <input
+              type="text"
+              id={key}
+              name={key}
+              value={(settings as any)[key]}
+              onChange={handleChange}
+              className="p-2 border rounded"
+            />
+          </div>
+        ))}
+      <div className="flex justify-center h-fit w-fit p-4">
+        <button type="button" onClick={handleSubmit} className="p-2 bg-blue-500 text-white rounded">
+          Submit
+        </button>
+      </div>
+      </form>
+    </div>
+    </>
   );
 };
 

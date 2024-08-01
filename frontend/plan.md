@@ -67,3 +67,90 @@ The user should be able to write a strategy in typescript and then send it to th
 LATER:
 The user should be able to select a pre coded strategy and then configure the settings for that strategy.
 The user should have the option to select some of the more basic indecators and settings for a trading strategy.
+
+
+
+
+# Plan
+- Allow user to select strategy and cosomize settings
+- Allow user to write their own strategy in typescript
+- Send strategy to backend to be processed
+- Display results
+- Store results in local storage
+- Allow user to download results
+- Expand the strategy options to include more pre coded strategies and basic settings
+- Expand the profit metrics to include more metrics like sharpe ratio, max drawdown, sortino ratio, max drawdown duration, etc.
+- 
+
+
+
+
+---
+
+
+User Settings for Trading Bot
+
+    Initial Settings
+        Initial Equity: The starting amount of money for the trading bot.
+        Risk per Trade (%): The percentage of equity to risk on each trade.
+        Risk Capital per Trade: The maximum amount of capital to risk on each trade.
+        Look Back Period: The amount of historical data (in candles) to use for backtesting.
+        Trading Pair: The currency pair to trade (e.g., BTC/USD, ETH/USD).
+        Time Interval: The time frame for each candle (e.g., 1m, 5m, 1h, 1d).
+        Commission (%): The commission rate charged by the exchange.
+        Slippage: The amount of slippage to account for in trading.
+        Pyramiding: The number of additional positions allowed in the direction of the current position.
+        Stop Loss (%): The percentage at which to stop a loss.
+        Take Profit (%): The percentage at which to take a profit.
+
+    Technical Indicators
+        Moving Average Lengths: The periods for short and long moving averages.
+        RSI Length: The period for calculating the Relative Strength Index.
+        RSI Overbought Level: The RSI level indicating overbought conditions.
+        RSI Oversold Level: The RSI level indicating oversold conditions.
+        ATR Length: The period for calculating the Average True Range.
+        ATR Multiplier: The multiplier used with ATR for setting stop loss and take profit levels.
+
+    Trade Execution Settings
+        Order Types: Types of orders to use (market, limit).
+        Max Open Trades: The maximum number of open trades at any given time.
+        Trading Hours: Specific hours during which the bot is allowed to trade.
+
+Performance Metrics
+
+    Balance and Profitability
+        Final Balance: The ending balance after the backtesting period.
+        Net Profit: The total profit or loss in monetary terms.
+        Net Profit (%): The total profit or loss as a percentage of the initial equity.
+        Gross Profit: The total profit before deducting losses.
+        Gross Loss: The total losses before deducting profits.
+        Profit Factor: The ratio of gross profit to gross loss.
+
+    Risk Metrics
+        Max Drawdown: The maximum observed loss from a peak to a trough of a portfolio, before a new peak is attained.
+        Max Drawdown (%): The maximum drawdown as a percentage of the portfolio.
+        Sharpe Ratio: The average return earned in excess of the risk-free rate per unit of volatility.
+        Sortino Ratio: The risk-adjusted return of the investment, penalizing only downside volatility.
+        Risk-Reward Ratio: The ratio between the average profit per trade and the average loss per trade.
+
+    Trade Statistics
+        Total Trades: The total number of trades executed.
+        Winning Trades: The number of trades that ended in profit.
+        Losing Trades: The number of trades that ended in loss.
+        Win Rate (%): The percentage of trades that were profitable.
+        Loss Rate (%): The percentage of trades that were not profitable.
+        Average Trade (%): The average percentage gain or loss per trade.
+        Largest Win: The largest single trade profit.
+        Largest Loss: The largest single trade loss.
+
+    Performance over Time
+        Monthly Returns: The returns of the bot on a monthly basis.
+        Daily Returns: The returns of the bot on a daily basis.
+        Equity Curve: The graphical representation of the portfolio balance over time.
+
+    Execution Metrics
+        Order Execution Speed: The average time taken to execute orders.
+        Slippage Experienced: The average slippage experienced per trade.
+        Commission Paid: The total commission paid over the period.
+
+    
