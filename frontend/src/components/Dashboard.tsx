@@ -1,64 +1,40 @@
-import React, { useState } from 'react';
-import SettingsForm, { Settings } from './SettingsForm';
+import { useState } from 'react';
+import SettingsForm from './SettingsForm';
 import ResultsTable from './ResultsTable';
-import axios from 'axios';
+import ChartDisplay from './TradingViewChart';
 
-const Dashboard: React.FC = () => {
-  const [settings, setSettings] = useState<Settings>({
-    initialEquity: '10000',
-    riskPerTrade: '2',
-    riskCapitalPerTrade: '0',
-    lookBack: '1000',
-    pair: 'BTCUSDC',
-    interval: '1m',
-    commission: '0.001',
-    slippage: '1',
-    pyramiding: '3',
-    stopLoss: '2',
-    takeProfit: '4',
-    shortMALength: '9',
-    longMALength: '50',
-    rsiLength: '14',
-    rsiOverbought: '70',
-    rsiOversold: '30',
-    atrLength: '14',
-    atrMultiplier: '1.5'
-  });
-  const [results, setResults] = useState<Array<{ result: string; value: string }>>([]);
-  const [loading, setLoading] = useState<boolean>(false);
+const Dashboard = () => {
+  const [results, setResults] = useState<any[]>([]);
 
-  const handleSettingsChange = (newSettings: Settings) => {
-    setSettings(newSettings);
-  };
-
-  const handleSettingsSubmit = async (settings: Settings) => {
-    setLoading(true);
+  const handleFormSubmit = async (strategy: string, settings: any) => {
     try {
-      console.log('Submitting settings:', settings);
-      const response = await axios.post('http://localhost:3000/backtest', settings);
-      const resultsArray = response.data.results.map((item: { result: string; value: string }) => ({
-        result: item.result,
-        value: item.value
-      }));
-      setResults(resultsArray);
+      const response = await fetch('http://localhost:3000/run-backtest', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ strategy, settings }),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setResults(data);
+      } else {
+        console.error('Failed to run backtest');
+      }
     } catch (error) {
-      console.error('Error submitting settings', error);
-    } finally {
-      setLoading(false);
+      console.error('Error:', error);
     }
   };
 
   return (
-    <div className="flex flex-col items-center w-full min-h-screen p-4 space-y-4">
-      <div className="flex w-full space-x-4">
-        <SettingsForm onChange={handleSettingsChange} onSubmit={handleSettingsSubmit} />
+    <div className='max-w-full'>
+      <h1 className='w-full text-center text-3xl py-4'>Backtest Dashboard</h1>
+      <div className='w-full flex flex-row justify-center p-8'>
+        <SettingsForm onSubmit={handleFormSubmit} />
+        <ChartDisplay pair='BTCUSDC' />
       </div>
-        <div className="flex flex-col w-full items-center justify-center">
-          <ResultsTable results={results} />
-        </div>
-      {loading && (
-        <div className="w-full p-4 border items-center justify-center rounded-md">Loading...</div>
-      )}
+      <ResultsTable results={results} />
     </div>
   );
 };

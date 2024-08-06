@@ -1,129 +1,193 @@
 import React, { useState } from 'react';
-import TradingViewChart from './TradingViewChart';
 
-export interface Settings {
-  initialEquity: string;
-  riskPerTrade: string;
-  riskCapitalPerTrade: string;
-  lookBack: string;
-  pair: string;
-  interval: string;
-  commission: string;
-  slippage: string;
-  pyramiding: string;
-  stopLoss: string;
-  takeProfit: string;
-  shortMALength: string;
-  longMALength: string;
-  rsiLength: string;
-  rsiOverbought: string;
-  rsiOversold: string;
-  atrLength: string;
-  atrMultiplier: string;
-}
+const strategies = [
+  { name: 'ATR', value: 'ATR' },
+  { name: 'Momentum Trading', value: 'Momentum Trading' },
+  { name: 'Scalping', value: 'Scalping' },
+  { name: 'Trend Following', value: 'Trend Following' },
+];
 
-interface SettingsFormProps {
-  onChange: (settings: Settings) => void;
-  onSubmit: (settings: Settings) => void;
-}
+const SettingsForm = ({ onSubmit }: { onSubmit: (strategy: string, settings: any) => void }) => {
+  const [selectedStrategy, setSelectedStrategy] = useState('ATR');
+  const [settings, setSettings] = useState({});
 
-const SettingsForm: React.FC<SettingsFormProps> = ({ onChange, onSubmit }) => {
-  const [settings, setSettings] = useState<Settings>({
-    initialEquity: '10000',
-    riskPerTrade: '2',
-    riskCapitalPerTrade: '0',
-    lookBack: '1000',
-    pair: 'BTCUSDC',
-    interval: '1m',
-    commission: '0.001',
-    slippage: '1',
-    pyramiding: '3',
-    stopLoss: '2',
-    takeProfit: '4',
-    shortMALength: '9',
-    longMALength: '50',
-    rsiLength: '14',
-    rsiOverbought: '70',
-    rsiOversold: '30',
-    atrLength: '14',
-    atrMultiplier: '1.5'
-  });
+  const handleStrategyChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    setSelectedStrategy(e.target.value);
+    setSettings({});
+  };
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setSettings(prevSettings => ({
-      ...prevSettings,
-      [name]: value
-    }));
-    onChange({ ...settings, [name]: value });
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSettings({
+      ...settings,
+      [e.target.name]: e.target.value,
+    });
   };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    onSubmit(settings);
+    onSubmit(selectedStrategy, settings);
   };
 
-  const generalSettings = [
-    'initialEquity', 'riskPerTrade', 'riskCapitalPerTrade', 'lookBack', 'pair', 
-    'interval', 'commission', 'slippage', 'pyramiding', 
-  ];
-
-  const strategySettings = [
-    'stopLoss', 'takeProfit', 'shortMALength', 'longMALength', 'rsiLength', 
-    'rsiOverbought', 'rsiOversold', 'atrLength', 'atrMultiplier'
-  ];
-
   return (
-    <>
-    <div className="flex h-fit w-full border-b-2">
-      <form className="flex flex-col w-fit  space-y-4 p-4 border-r" onSubmit={handleSubmit}>
-        <h2 className="text-lg font-semibold">General Settings</h2>
-        {generalSettings.map(key => (
-          <div key={key} className="flex flex-col">
-            <label htmlFor={key} className="text-sm font-medium">
-              {key.replace(/([A-Z])/g, ' $1').trim()}
-            </label>
+    <form onSubmit={handleSubmit} className="max-w-xl mx-auto p-4 bg-white rounded-lg shadow-md">
+      <div className="mb-4">
+        <label className="block text-gray-700 text-sm font-bold mb-2">Select Strategy:</label>
+        <select
+          value={selectedStrategy}
+          onChange={handleStrategyChange}
+          className="block w-full bg-gray-200 text-gray-700 border border-gray-200 rounded py-2 px-3 leading-tight focus:outline-none focus:bg-white focus:border-gray-500"
+        >
+          {strategies.map((strategy) => (
+            <option key={strategy.value} value={strategy.value}>
+              {strategy.name}
+            </option>
+          ))}
+        </select>
+      </div>
+
+      {/* Add input fields for common and specific strategy settings */}
+      <div className="mb-4">
+        <label className="block text-gray-700 text-sm font-bold mb-2">Initial Equity:</label>
+        <input
+          name="initialEquity"
+          type="number"
+          onChange={handleInputChange}
+          className="block w-full bg-gray-200 text-gray-700 border border-gray-200 rounded py-2 px-3 leading-tight focus:outline-none focus:bg-white focus:border-gray-500"
+        />
+      </div>
+      <div className="mb-4">
+        <label className="block text-gray-700 text-sm font-bold mb-2">Risk Per Trade (%):</label>
+        <input
+          name="riskPerTrade"
+          type="number"
+          onChange={handleInputChange}
+          className="block w-full bg-gray-200 text-gray-700 border border-gray-200 rounded py-2 px-3 leading-tight focus:outline-none focus:bg-white focus:border-gray-500"
+        />
+      </div>
+      <div className="mb-4">
+        <label className="block text-gray-700 text-sm font-bold mb-2">Look Back:</label>
+        <input
+          name="lookBack"
+          type="number"
+          onChange={handleInputChange}
+          className="block w-full bg-gray-200 text-gray-700 border border-gray-200 rounded py-2 px-3 leading-tight focus:outline-none focus:bg-white focus:border-gray-500"
+        />
+      </div>
+      <div className="mb-4">
+        <label className="block text-gray-700 text-sm font-bold mb-2">Pair:</label>
+        <input
+          name="pair"
+          type="text"
+          onChange={handleInputChange}
+          className="block w-full bg-gray-200 text-gray-700 border border-gray-200 rounded py-2 px-3 leading-tight focus:outline-none focus:bg-white focus:border-gray-500"
+        />
+      </div>
+      <div className="mb-4">
+        <label className="block text-gray-700 text-sm font-bold mb-2">Interval:</label>
+        <input
+          name="interval"
+          type="text"
+          onChange={handleInputChange}
+          className="block w-full bg-gray-200 text-gray-700 border border-gray-200 rounded py-2 px-3 leading-tight focus:outline-none focus:bg-white focus:border-gray-500"
+        />
+      </div>
+      <div className="mb-4">
+        <label className="block text-gray-700 text-sm font-bold mb-2">Slippage (%):</label>
+        <input
+          name="slippage"
+          type="number"
+          onChange={handleInputChange}
+          className="block w-full bg-gray-200 text-gray-700 border border-gray-200 rounded py-2 px-3 leading-tight focus:outline-none focus:bg-white focus:border-gray-500"
+        />
+      </div>
+
+      {/* Add additional fields based on the selected strategy */}
+      {selectedStrategy === 'ATR' && (
+        <>
+          <div className="mb-4">
+            <label className="block text-gray-700 text-sm font-bold mb-2">ATR Length:</label>
             <input
-              type="text"
-              id={key}
-              name={key}
-              value={(settings as any)[key]}
-              onChange={handleChange}
-              className="p-2 border rounded"
+              name="atrLength"
+              type="number"
+              onChange={handleInputChange}
+              className="block w-full bg-gray-200 text-gray-700 border border-gray-200 rounded py-2 px-3 leading-tight focus:outline-none focus:bg-white focus:border-gray-500"
             />
           </div>
-        ))}
-      </form>
-      
-      <div className="flex flex-col w-full items-center p-4">
-        < TradingViewChart pair={settings.pair} />
-      </div>
-      
-      <form className="flex flex-col w-fit space-y-4 p-4 border-l" onSubmit={handleSubmit}>
-        <h2 className="text-lg font-semibold">Strategy Settings</h2>
-        {strategySettings.map(key => (
-          <div key={key} className="flex flex-col">
-            <label htmlFor={key} className="text-sm font-medium">
-              {key.replace(/([A-Z])/g, ' $1').trim()}
-            </label>
+          <div className="mb-4">
+            <label className="block text-gray-700 text-sm font-bold mb-2">ATR Multiplier:</label>
             <input
-              type="text"
-              id={key}
-              name={key}
-              value={(settings as any)[key]}
-              onChange={handleChange}
-              className="p-2 border rounded"
+              name="atrMultiplier"
+              type="number"
+              onChange={handleInputChange}
+              className="block w-full bg-gray-200 text-gray-700 border border-gray-200 rounded py-2 px-3 leading-tight focus:outline-none focus:bg-white focus:border-gray-500"
             />
           </div>
-        ))}
-      <div className="flex justify-center h-fit w-fit p-4">
-        <button type="button" onClick={handleSubmit} className="p-2 bg-blue-500 text-white rounded">
-          Submit
-        </button>
-      </div>
-      </form>
-    </div>
-    </>
+        </>
+      )}
+      {selectedStrategy === 'Momentum Trading' && (
+        <>
+          {/* Add specific fields for Momentum Trading */}
+        </>
+      )}
+      {selectedStrategy === 'Scalping' && (
+        <>
+          {/* Add specific fields for Scalping */}
+        </>
+      )}
+      {selectedStrategy === 'Trend Following' && (
+        <>
+          <div className="mb-4">
+            <label className="block text-gray-700 text-sm font-bold mb-2">Fast Length:</label>
+            <input
+              name="fastLength"
+              type="number"
+              onChange={handleInputChange}
+              className="block w-full bg-gray-200 text-gray-700 border border-gray-200 rounded py-2 px-3 leading-tight focus:outline-none focus:bg-white focus:border-gray-500"
+            />
+          </div>
+          <div className="mb-4">
+            <label className="block text-gray-700 text-sm font-bold mb-2">Slow Length:</label>
+            <input
+              name="slowLength"
+              type="number"
+              onChange={handleInputChange}
+              className="block w-full bg-gray-200 text-gray-700 border border-gray-200 rounded py-2 px-3 leading-tight focus:outline-none focus:bg-white focus:border-gray-500"
+            />
+          </div>
+          <div className="mb-4">
+            <label className="block text-gray-700 text-sm font-bold mb-2">RSI Length:</label>
+            <input
+              name="rsiLength"
+              type="number"
+              onChange={handleInputChange}
+              className="block w-full bg-gray-200 text-gray-700 border border-gray-200 rounded py-2 px-3 leading-tight focus:outline-none focus:bg-white focus:border-gray-500"
+            />
+          </div>
+          <div className="mb-4">
+            <label className="block text-gray-700 text-sm font-bold mb-2">RSI Overbought:</label>
+            <input
+              name="rsiOverbought"
+              type="number"
+              onChange={handleInputChange}
+              className="block w-full bg-gray-200 text-gray-700 border border-gray-200 rounded py-2 px-3 leading-tight focus:outline-none focus:bg-white focus:border-gray-500"
+            />
+          </div>
+          <div className="mb-4">
+            <label className="block text-gray-700 text-sm font-bold mb-2">RSI Oversold:</label>
+            <input
+              name="rsiOversold"
+              type="number"
+              onChange={handleInputChange}
+              className="block w-full bg-gray-200 text-gray-700 border border-gray-200 rounded py-2 px-3 leading-tight focus:outline-none focus:bg-white focus:border-gray-500"
+            />
+          </div>
+        </>
+      )}
+
+      <button type="submit" className="w-full bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
+        Run Strategy
+      </button>
+    </form>
   );
 };
 

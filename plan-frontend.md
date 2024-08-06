@@ -1,10 +1,12 @@
+# Frontend Plan
+
 1. Purpose and Functionality:
-        - What is the primary purpose of the application? (e.g., e-commerce, analytics dashboard)
-            TO craete a web application that allows users to input backtesting settings and strategy for trading bot. 
-        - What are the core functionalities that the frontend should support?
-            - Input and save backtesting settings
-            - Display backtesting results
-            
+    - What is the primary purpose of the application? (e.g., e-commerce, analytics dashboard)
+        TO craete a web application that allows users to input backtesting settings and strategy for trading bot.
+    - What are the core functionalities that the frontend should support?
+        - Input and save backtesting settings
+        - Display backtesting results
+
 2. User Interaction and Experience:
     -Who are the target users of the application?
         anyone who wants to backtest a trading strategy.
@@ -35,14 +37,14 @@
 
     - How do these components interact with each other? (e.g., data flow, state management)
         - all of them are children of the dashboard component and the dashboard component manages the state of the application
-        
+
 5. Technical Requirements:
     - Are there specific technologies or libraries (beyond React and Express) that you plan to use or want to explore?
         - Tailwind CSS for styling
         - axios for making HTTP requests
     - How should the frontend communicate with the backend? Are there specific API requirements?
         - The frontend should sent the settings and strategy to the backend to be processed and then the backend should send the results back to the frontend
-        - we need a claver way to handle the strategy and settings to the backend. The goal is that the user writes the parameters for a trading bot and the best way/simpliest way to do this is to write the strategy in typescript and then send the file to the backend. but maybe we should have pre coded strategies that the user can select from and change settings. essentially i want the user to be able to configure the strategy on the front end then send it to the backend to be processed. 
+        - we need a claver way to handle the strategy and settings to the backend. The goal is that the user writes the parameters for a trading bot and the best way/simpliest way to do this is to write the strategy in typescript and then send the file to the backend. but maybe we should have pre coded strategies that the user can select from and change settings. essentially i want the user to be able to configure the strategy on the front end then send it to the backend to be processed.
 
 6. External Integrations:
     - Are you planning to integrate any third-party services or APIs? If so, which ones and for what purposes?
@@ -54,11 +56,9 @@
     -Are there specific performance metrics or benchmarks you aim to meet?
         - None
 
-
 ---
 
-
-Lets start by getting the user coded ts strategy to work with the backend to later integrate precoded strategies and have some of the more basic configurations of a trading 
+Lets start by getting the user coded ts strategy to work with the backend to later integrate precoded strategies and have some of the more basic configurations of a trading
 strategy as a select option.
 
 NOW:
@@ -68,10 +68,8 @@ LATER:
 The user should be able to select a pre coded strategy and then configure the settings for that strategy.
 The user should have the option to select some of the more basic indecators and settings for a trading strategy.
 
+## Plan
 
-
-
-# Plan
 - Allow user to select strategy and cosomize settings
 - Allow user to write their own strategy in typescript
 - Send strategy to backend to be processed
@@ -80,13 +78,9 @@ The user should have the option to select some of the more basic indecators and 
 - Allow user to download results
 - Expand the strategy options to include more pre coded strategies and basic settings
 - Expand the profit metrics to include more metrics like sharpe ratio, max drawdown, sortino ratio, max drawdown duration, etc.
-- 
-
-
-
+-
 
 ---
-
 
 User Settings for Trading Bot
 
@@ -152,5 +146,3 @@ Performance Metrics
         Order Execution Speed: The average time taken to execute orders.
         Slippage Experienced: The average slippage experienced per trade.
         Commission Paid: The total commission paid over the period.
-
-    

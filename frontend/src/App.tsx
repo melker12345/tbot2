@@ -3,7 +3,7 @@ import Dashboard from './components/Dashboard';
 
 const App: React.FC = () => {
   return (
-    <div>
+    <div className='w-full max-w-full'>
       <Dashboard />
     </div>
   );
