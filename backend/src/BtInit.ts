@@ -8,7 +8,7 @@ import { runTrendFollowingStrategy } from './strategies/TrendFollowing';
 const client = new Spot('pGiByzo9s21pycbqpErz5sFm5UlaqYHm8U80cj5X32cZNZck8vsTJFOdyjsvOeGi', '0Suu16JX7apOE372QYfLeliNpu6Ly5QMU9ThdXSDoGf0pwXIrpNft4eB08fnMvfJ');
 
 const fetchAllHistoricalData = async (symbol: string, interval: any, lookBack: number) => {
-  const limit = 1000;
+  const limit = 1000000;
   let allData: any[] = [];
   let endTime = Date.now();
 
@@ -55,18 +55,18 @@ export const calculateResults = (strategyName: string, state: any, settings: any
 
   return [
     { result: "Strategy", value: strategyName },
-    { result: "Final Balance", value: state.capital.toFixed(2) },
-    { result: "Net Profit", value: netProfit.toFixed(2) },
-    { result: "Net Profit Percent (%)", value: netProfitPercent.toFixed(2) },
-    { result: "Profit Ratio", value: profitRatio.toFixed(2) },
+    { result: "Final Balance", value: isNaN(state.capital) ? "NaN" : state.capital.toFixed(2) },
+    { result: "Net Profit", value: isNaN(netProfit) ? "NaN" : netProfit.toFixed(2) },
+    { result: "Net Profit Percent (%)", value: isNaN(netProfitPercent) ? "NaN" : netProfitPercent.toFixed(4) },
+    { result: "Profit Ratio", value: isNaN(profitRatio) ? "NaN" : profitRatio.toFixed(2) },
     { result: "Total Closed Trades", value: state.trades.toString() },
-    { result: "Average Trade", value: averageTrade.toFixed(2) },
+    { result: "Average Trade", value: isNaN(averageTrade) ? "NaN" : averageTrade.toFixed(4) },
     { result: "Wins", value: state.wins.toString() },
     { result: "Losses", value: state.losses.toString() },
-    { result: "Total Percent Gain (%)", value: state.totalPercentGain.toFixed(2) },
-    { result: "Total Percent Loss (%)", value: state.totalPercentLoss.toFixed(2) },
-    { result: "Commission (%)", value: (settings.commission * state.trades).toFixed(2) },
-    { result: "Slippage (%)", value: settings.slippage.toString() },
+    { result: "Total Percent Gain (%)", value: state.totalPercentGain.toFixed(4) },
+    { result: "Total Percent Loss (%)", value: state.totalPercentLoss.toFixed(4) },
+    { result: "Commission (%)", value: isNaN(parseFloat(settings.commission)) ? "NaN" : (parseFloat(settings.commission) * state.trades).toFixed(2) },
+    { result: "Slippage (%)", value: isNaN(parseFloat(settings.slippage)) ? "NaN" : parseFloat(settings.slippage).toFixed(2) },
     { result: "Initial Equity", value: settings.initialEquity },
     { result: "Risk Per Trade (%)", value: settings.riskPerTrade },
     { result: "Look Back", value: settings.lookBack },
@@ -100,7 +100,17 @@ export const setupRoutes = (app: Express) => {
     const { strategy, settings } = req.body;
 
     try {
-      const result = await runBacktest(strategy, settings);
+      // Parse settings to ensure correct types
+      const parsedSettings = {
+        ...settings,
+        initialEquity: parseFloat(settings.initialEquity),
+        riskPerTrade: parseFloat(settings.riskPerTrade),
+        lookBack: parseInt(settings.lookBack, 10),
+        commission: parseFloat(settings.commission || 0),
+        slippage: parseFloat(settings.slippage || 0),
+      };
+
+      const result = await runBacktest(strategy, parsedSettings);
       res.json(result);
     } catch (error) {
       res.status(400).send(error);

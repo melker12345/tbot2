@@ -9,7 +9,7 @@ const strategies = [
 
 const SettingsForm = ({ onSubmit }: { onSubmit: (strategy: string, settings: any) => void }) => {
   const [selectedStrategy, setSelectedStrategy] = useState('ATR');
-  const [settings, setSettings] = useState({});
+  const [settings, setSettings] = useState<any>({});
 
   const handleStrategyChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     setSelectedStrategy(e.target.value);
@@ -17,9 +17,11 @@ const SettingsForm = ({ onSubmit }: { onSubmit: (strategy: string, settings: any
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    const parsedValue = name === 'pair' || name === 'strategy' || name === 'interval' ? value : parseFloat(value);
     setSettings({
       ...settings,
-      [e.target.name]: e.target.value,
+      [name]: parsedValue ? value : parsedValue,
     });
   };
 
@@ -45,12 +47,12 @@ const SettingsForm = ({ onSubmit }: { onSubmit: (strategy: string, settings: any
         </select>
       </div>
 
-      {/* Add input fields for common and specific strategy settings */}
       <div className="mb-4">
         <label className="block text-gray-700 text-sm font-bold mb-2">Initial Equity:</label>
         <input
           name="initialEquity"
           type="number"
+          step="any"
           onChange={handleInputChange}
           className="block w-full bg-gray-200 text-gray-700 border border-gray-200 rounded py-2 px-3 leading-tight focus:outline-none focus:bg-white focus:border-gray-500"
         />
@@ -60,6 +62,7 @@ const SettingsForm = ({ onSubmit }: { onSubmit: (strategy: string, settings: any
         <input
           name="riskPerTrade"
           type="number"
+          step="any"
           onChange={handleInputChange}
           className="block w-full bg-gray-200 text-gray-700 border border-gray-200 rounded py-2 px-3 leading-tight focus:outline-none focus:bg-white focus:border-gray-500"
         />
@@ -69,6 +72,7 @@ const SettingsForm = ({ onSubmit }: { onSubmit: (strategy: string, settings: any
         <input
           name="lookBack"
           type="number"
+          step="any"
           onChange={handleInputChange}
           className="block w-full bg-gray-200 text-gray-700 border border-gray-200 rounded py-2 px-3 leading-tight focus:outline-none focus:bg-white focus:border-gray-500"
         />
@@ -96,12 +100,12 @@ const SettingsForm = ({ onSubmit }: { onSubmit: (strategy: string, settings: any
         <input
           name="slippage"
           type="number"
+          step="any"
           onChange={handleInputChange}
           className="block w-full bg-gray-200 text-gray-700 border border-gray-200 rounded py-2 px-3 leading-tight focus:outline-none focus:bg-white focus:border-gray-500"
         />
       </div>
 
-      {/* Add additional fields based on the selected strategy */}
       {selectedStrategy === 'ATR' && (
         <>
           <div className="mb-4">
@@ -109,6 +113,7 @@ const SettingsForm = ({ onSubmit }: { onSubmit: (strategy: string, settings: any
             <input
               name="atrLength"
               type="number"
+              step="any"
               onChange={handleInputChange}
               className="block w-full bg-gray-200 text-gray-700 border border-gray-200 rounded py-2 px-3 leading-tight focus:outline-none focus:bg-white focus:border-gray-500"
             />
@@ -118,6 +123,7 @@ const SettingsForm = ({ onSubmit }: { onSubmit: (strategy: string, settings: any
             <input
               name="atrMultiplier"
               type="number"
+              step="any"
               onChange={handleInputChange}
               className="block w-full bg-gray-200 text-gray-700 border border-gray-200 rounded py-2 px-3 leading-tight focus:outline-none focus:bg-white focus:border-gray-500"
             />
@@ -141,6 +147,7 @@ const SettingsForm = ({ onSubmit }: { onSubmit: (strategy: string, settings: any
             <input
               name="fastLength"
               type="number"
+              step="any"
               onChange={handleInputChange}
               className="block w-full bg-gray-200 text-gray-700 border border-gray-200 rounded py-2 px-3 leading-tight focus:outline-none focus:bg-white focus:border-gray-500"
             />
@@ -150,6 +157,7 @@ const SettingsForm = ({ onSubmit }: { onSubmit: (strategy: string, settings: any
             <input
               name="slowLength"
               type="number"
+              step="any"
               onChange={handleInputChange}
               className="block w-full bg-gray-200 text-gray-700 border border-gray-200 rounded py-2 px-3 leading-tight focus:outline-none focus:bg-white focus:border-gray-500"
             />
@@ -159,6 +167,7 @@ const SettingsForm = ({ onSubmit }: { onSubmit: (strategy: string, settings: any
             <input
               name="rsiLength"
               type="number"
+              step="any"
               onChange={handleInputChange}
               className="block w-full bg-gray-200 text-gray-700 border border-gray-200 rounded py-2 px-3 leading-tight focus:outline-none focus:bg-white focus:border-gray-500"
             />
@@ -168,6 +177,7 @@ const SettingsForm = ({ onSubmit }: { onSubmit: (strategy: string, settings: any
             <input
               name="rsiOverbought"
               type="number"
+              step="any"
               onChange={handleInputChange}
               className="block w-full bg-gray-200 text-gray-700 border border-gray-200 rounded py-2 px-3 leading-tight focus:outline-none focus:bg-white focus:border-gray-500"
             />
@@ -177,6 +187,7 @@ const SettingsForm = ({ onSubmit }: { onSubmit: (strategy: string, settings: any
             <input
               name="rsiOversold"
               type="number"
+              step="any"
               onChange={handleInputChange}
               className="block w-full bg-gray-200 text-gray-700 border border-gray-200 rounded py-2 px-3 leading-tight focus:outline-none focus:bg-white focus:border-gray-500"
             />

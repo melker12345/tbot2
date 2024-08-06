@@ -15,12 +15,17 @@ export const runATRStrategy = (data: any[], settings: any, state: any) => {
     const currentPrice = closes[i];
     const currentATR = atrValues[i - atrLength];
 
+    if (isNaN(currentPrice) || isNaN(currentATR)) {
+      console.error(`Invalid data at index ${i}:`, { currentPrice, currentATR });
+      continue;
+    }
+
     const longStopLoss = state.entryPrice - currentATR * atrMultiplier;
     const longTakeProfit = state.entryPrice + currentATR * atrMultiplier * 2;
     const shortStopLoss = state.entryPrice + currentATR * atrMultiplier;
     const shortTakeProfit = state.entryPrice - currentATR * atrMultiplier * 2;
 
-    const tradeSize = state.capital * (parseFloat(settings.riskPerTrade) / 100);
+    const tradeSize = state.capital * (settings.riskPerTrade / 100);
 
     if (state.position === 0) {
       if (currentATR > atrMultiplier) {
@@ -36,7 +41,11 @@ export const runATRStrategy = (data: any[], settings: any, state: any) => {
 
     if (state.position === 1 && (currentPrice <= longStopLoss || currentPrice >= longTakeProfit)) {
       const percentChange = ((currentPrice - state.entryPrice) / state.entryPrice) * 100;
-      state.capital += (currentPrice - state.entryPrice) * (tradeSize / state.entryPrice) * (1 - parseFloat(commission) / 100) - (tradeSize * parseFloat(slippage) / 100);
+      if (isNaN(percentChange)) {
+        console.error(`Invalid percent change for long position at index ${i}:`, { percentChange, currentPrice, entryPrice: state.entryPrice });
+        continue;
+      }
+      state.capital += (currentPrice - state.entryPrice) * (tradeSize / state.entryPrice) * (1 - commission / 100) - (tradeSize * slippage / 100);
       state.performance.push({ date: data[i].openTime, capital: state.capital });
       state.trades++;
       if (percentChange > 0) {
@@ -50,7 +59,11 @@ export const runATRStrategy = (data: any[], settings: any, state: any) => {
       state.position = 0;
     } else if (state.position === -1 && (currentPrice >= shortStopLoss || currentPrice <= shortTakeProfit)) {
       const percentChange = ((state.entryPrice - currentPrice) / state.entryPrice) * 100;
-      state.capital += (state.entryPrice - currentPrice) * (tradeSize / state.entryPrice) * (1 - parseFloat(commission) / 100) - (tradeSize * parseFloat(slippage) / 100);
+      if (isNaN(percentChange)) {
+        console.error(`Invalid percent change for short position at index ${i}:`, { percentChange, currentPrice, entryPrice: state.entryPrice });
+        continue;
+      }
+      state.capital += (state.entryPrice - currentPrice) * (tradeSize / state.entryPrice) * (1 - commission / 100) - (tradeSize * slippage / 100);
       state.performance.push({ date: data[i].openTime, capital: state.capital });
       state.trades++;
       if (percentChange > 0) {

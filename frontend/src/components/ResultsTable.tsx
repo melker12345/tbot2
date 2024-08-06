@@ -1,7 +1,7 @@
 import React from 'react';
 
 interface ResultsTableProps {
-  results: Array<{ result: string; value: string }>;
+  results: Array<{ result: any; value: any }>;
 }
 
 const ResultsTable: React.FC<ResultsTableProps> = ({ results }) => {
@@ -27,7 +27,7 @@ const ResultsTable: React.FC<ResultsTableProps> = ({ results }) => {
             {results.map((result, index) => (
               <tr key={index} className="border-b transition-colors hover:bg-muted/50 data-[state=selected]:bg-muted">
                 <td className="p-4 align-middle font-medium">{result.result}</td>
-                <td className="p-4 align-middle">{result.value}</td>
+                <td className="p-4 align-middle">{isNaN(result.value) || result.value === null || result.value === undefined ? "Invalid Value" : result.value}</td>
               </tr>
             ))}
           </tbody>

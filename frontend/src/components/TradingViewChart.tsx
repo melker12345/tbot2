@@ -23,7 +23,7 @@ const ChartDisplay: React.FC<TradingViewChartProps> = ({ pair }) => {
           autosize: true,
           symbol: pair,
           timezone: 'Etc/UTC',
-          theme: 'light',
+          theme: 'dark',
           style: '1',
           locale: 'en',
           toolbar_bg: '#f1f3f6',
